@@ -128,9 +128,9 @@ For seamless local evaluation, the application includes a **1-click Role Switche
 
 ---
 
-## 📋 Phase 0 Completion Status
+## 📋 Phase 0 & Phase 1 (MVP) Completion Status
 
-### ✅ What's Done
+### ✅ What's Done in Phase 0 (Foundation)
 - [x] Monorepo setup with `pnpm`, TypeScript strict mode, Vitest.
 - [x] Design tokens compiled from Stitch project `16455743899925835810` (CSS variables, TS exports, Flutter Dart theme tokens).
 - [x] Bilingual i18n package (`en.json`, `hi.json`) with instant English/Hindi switcher.
@@ -138,23 +138,27 @@ For seamless local evaluation, the application includes a **1-click Role Switche
 - [x] Automated test suite proving parent data isolation and i18n parity (100% passing).
 - [x] Unified data access layer in `/apps/web/src/data/*.ts`.
 - [x] Responsive PWA app shell with Header, Child Switcher, Mobile Bottom Nav, and Desktop Admin Sidebar.
-- [x] All 7 priority features foundation implemented:
-  1. 📢 Notices & Announcements
-  2. 👨‍🎓 Student 360° Profile & Directory
-  3. ✅ Attendance (Roll call & Calendar)
-  4. 🏠 Parent Dashboard
-  5. 📚 Homework / Assignments
-  6. 🗓️ Timetable
-  7. 📅 School Calendar / Events
 - [x] Complete Flutter Migration Pack in `/docs/flutter-migration.md`, `/docs/api.md`, `/docs/data-model.md`.
+
+### ✅ What's Done in Phase 1 (MVP Delivery)
+- [x] **Admin Academic Management**: Academic sessions, Class LKG to 8 structure, sections, and curricula syllabi (`/portal/admin/academics`).
+- [x] **Staff & Faculty Allocation**: Employee directory, contact ledger, and class teacher assignments (`/portal/admin/staff`).
+- [x] **Student Admissions & CSV Batch Importer**: Single admission form and CSV bulk importer with instant validation, error reporting, and export (`/portal/students`).
+- [x] **Teacher Daily Attendance Roll Call**: Single-tap toggles (P/A/L), mark all present with 1 click, and auto-dispatch absence alerts (`/portal/attendance`).
+- [x] **Teacher Homework & Notices**: Assignment posting with due dates, subject categorization, and audience-targeted circulars.
+- [x] **Parent Multi-Child Experience**: Instant child switcher (Aarav / Ananya), attendance calendar with CBSE 75% exam eligibility warning, and fee summary with receipts.
+- [x] **Real-Time In-App Notifications**: Notification drawer (`/portal/notifications`) handling absence alerts, new homework assignments, and official circulars.
+- [x] **PWA Offline Shell**: Service worker (`sw.js`) with cache fallback for offline access.
+- [x] **Full Automated Testing**: 10 tests across 3 test suites passing (`rls.test.ts`, `i18n.test.ts`, `phase1-features.test.ts`).
 
 ---
 
-### 🔜 What's Next in Phase 1 (Upon Approval)
-1. **Admin Management Modules**: Academic year creation, section management, CSV batch import for students and staff.
-2. **Teacher Workflow Expansion**: Push notifications on marking absent, homework file attachment uploads with signed Supabase URLs.
-3. **Parent Notifications**: Real-time push notifications and in-app alerts on student absence or urgent school circulars.
-4. **PWA Offline Shell**: Service worker caching of last-synced timetable and notices.
+### 🔜 What's Next in Phase 2 (Upon Approval)
+1. **Online Fee Payment**: Razorpay server-side order generation and webhook verification.
+2. **Resource Library**: Educational PDF upload, tags, search, and bookmarks.
+3. **Exams & Report Cards**: Marks entry grid, result computation, and PDF report cards.
+4. **Parent-Teacher Messaging**: Real-time communication between guardians and class teachers.
+5. **Leave Applications**: Digital leave requests with teacher approval workflow.
 
 ---
 

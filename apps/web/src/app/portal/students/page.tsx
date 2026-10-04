@@ -18,6 +18,7 @@ import { useLocale } from '@/components/providers/LocaleProvider';
 import { useRoleSession } from '@/components/providers/RoleSessionProvider';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { getStudents } from '@/data/students';
+import { addStudentAdmission, parseStudentsCSV } from '@/data/admin';
 import { formatCurrency } from '@/lib/utils';
 import type { StudentWithClass } from '@gyansthali/api-types';
 
@@ -27,6 +28,26 @@ export default function StudentsDirectoryPage() {
   const [students, setStudents] = useState<StudentWithClass[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showCsvModal, setShowCsvModal] = useState(false);
+  const [csvInput, setCsvInput] = useState('');
+  const [csvStatus, setCsvStatus] = useState<string | null>(null);
+
+  // Single admission form state
+  const [admNumber, setAdmNumber] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [firstNameHi, setFirstNameHi] = useState('');
+  const [lastNameHi, setLastNameHi] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
+  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [category, setCategory] = useState('GEN');
+  const [isRte, setIsRte] = useState(false);
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianPhone, setGuardianPhone] = useState('');
+  const [busRoute, setBusRoute] = useState('Bus Route #1');
 
   useEffect(() => {
     getStudents().then(setStudents);
@@ -47,6 +68,76 @@ export default function StudentsDirectoryPage() {
 
     return matchesSearch && matchesCategory;
   });
+
+  const handleAdmissionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName || !lastName || !admNumber) return;
+
+    const created = await addStudentAdmission({
+      profile_id: null,
+      admission_number: admNumber,
+      first_name: firstName,
+      last_name: lastName,
+      first_name_hi: firstNameHi || null,
+      last_name_hi: lastNameHi || null,
+      roll_number: parseInt(rollNumber, 10) || students.length + 1,
+      section_id: 's0000000-0000-0000-0000-00000000005a',
+      className: 'Class 5',
+      sectionName: 'A',
+      academic_year_id: 'a0000000-0000-0000-0000-000000000001',
+      date_of_birth: '2014-06-01',
+      gender,
+      blood_group: 'B+',
+      category,
+      is_rte: isRte,
+      bus_route: busRoute,
+      emergency_phone: guardianPhone || '+91 98765 00000',
+      guardianName: guardianName || 'Guardian',
+      guardianPhone: guardianPhone || '+91 98765 00000',
+      attendancePct: 100,
+      totalFeeDue: 0,
+      address: 'Kalajharia, Jamtara',
+      avatar_url: null,
+    });
+
+    setStudents([created, ...students]);
+    setShowAddModal(false);
+    setFirstName('');
+    setLastName('');
+    setAdmNumber('');
+  };
+
+  const handleCsvImport = () => {
+    if (!csvInput.trim()) return;
+    const result = parseStudentsCSV(csvInput);
+    if (result.successful.length > 0) {
+      setStudents([...result.successful, ...students]);
+      setCsvStatus(`Successfully imported ${result.successful.length} students!`);
+      setTimeout(() => {
+        setShowCsvModal(false);
+        setCsvStatus(null);
+        setCsvInput('');
+      }, 2000);
+    } else {
+      setCsvStatus(`Import failed: ${result.errors[0]?.error || 'Unknown error'}`);
+    }
+  };
+
+  const sampleCsvTemplate = `admission_number,first_name,last_name,roll_number,gender,category,is_rte,guardian_name,guardian_phone,emergency_phone
+GSPS-2024-901,Rohit,Kumar,21,male,GEN,false,Anil Kumar,+91 98765 11111,+91 98765 11111
+GSPS-2024-902,Sita,Marandi,22,female,ST,true,Ramu Marandi,+91 98765 22222,+91 98765 22222`;
+
+  const handleExportCsv = () => {
+    const headers = 'admission_number,first_name,last_name,class,roll_number,gender,category,is_rte,guardian_name,guardian_phone\n';
+    const rows = students.map((s) => `${s.admission_number},"${s.first_name}","${s.last_name}","${s.className}-${s.sectionName}",${s.roll_number},${s.gender},${s.category},${s.is_rte},"${s.guardianName}","${s.guardianPhone}"`).join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gyansthali_students_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -71,14 +162,24 @@ export default function StudentsDirectoryPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+            onClick={handleExportCsv}
+            className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             CSV Export
           </button>
           <button
             type="button"
-            className="px-4 py-2 rounded-xl bg-[#1E3A8A] text-white text-xs font-bold hover:bg-blue-900 transition-colors flex items-center gap-1.5"
+            onClick={() => setShowCsvModal(true)}
+            className="px-3.5 py-2 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 rotate-180" />
+            CSV Batch Import
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 rounded-xl bg-[#1E3A8A] text-white text-xs font-bold hover:bg-blue-900 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             + New Admission
@@ -272,6 +373,200 @@ export default function StudentsDirectoryPage() {
           </table>
         </div>
       </div>
+
+      {/* Single Admission Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 my-8">
+            <h3 className="text-base font-bold text-slate-900 mb-4">New Student Admission</h3>
+            <form onSubmit={handleAdmissionSubmit} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Scholar ID *</label>
+                  <input
+                    type="text"
+                    required
+                    value={admNumber}
+                    onChange={(e) => setAdmNumber(e.target.value)}
+                    placeholder="GSPS-2024-501"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Roll Number *</label>
+                  <input
+                    type="number"
+                    required
+                    value={rollNumber}
+                    onChange={(e) => setRollNumber(e.target.value)}
+                    placeholder="25"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">First Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="e.g. Vikas"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Last Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="e.g. Soren"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Gender</label>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Social Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  >
+                    <option value="GEN">General</option>
+                    <option value="OBC">OBC</option>
+                    <option value="SC">SC</option>
+                    <option value="ST">ST</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="rteCheckbox"
+                  checked={isRte}
+                  onChange={(e) => setIsRte(e.target.checked)}
+                  className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="rteCheckbox" className="text-xs font-semibold text-amber-900 cursor-pointer">
+                  RTE Section 12(1)(c) Quota Beneficiary
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Guardian Name</label>
+                  <input
+                    type="text"
+                    value={guardianName}
+                    onChange={(e) => setGuardianName(e.target.value)}
+                    placeholder="Father/Mother name"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Guardian Phone</label>
+                  <input
+                    type="tel"
+                    value={guardianPhone}
+                    onChange={(e) => setGuardianPhone(e.target.value)}
+                    placeholder="+91 98765 00000"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-[#1E3A8A] text-white text-xs font-bold hover:bg-blue-900"
+                >
+                  Save Admission
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CSV Batch Import Modal */}
+      {showCsvModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+            <h3 className="text-base font-bold text-slate-900 mb-2">CSV Batch Students Import</h3>
+            <p className="text-xs text-slate-500 mb-3">
+              Paste CSV contents below. Must match standard format:
+            </p>
+
+            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-700 mb-3 whitespace-pre-line">
+              {sampleCsvTemplate}
+            </div>
+
+            <textarea
+              rows={5}
+              value={csvInput}
+              onChange={(e) => setCsvInput(e.target.value)}
+              placeholder="Paste comma-separated rows here..."
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono focus:ring-2 focus:ring-[#1E3A8A] outline-none"
+            />
+
+            {csvStatus && (
+              <p className="text-xs font-bold mt-2 text-purple-700">{csvStatus}</p>
+            )}
+
+            <div className="flex items-center justify-between pt-3">
+              <button
+                type="button"
+                onClick={() => setCsvInput(sampleCsvTemplate)}
+                className="text-xs font-semibold text-[#1E3A8A] hover:underline"
+              >
+                Use Sample Data
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCsvModal(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCsvImport}
+                  className="px-4 py-2 rounded-lg bg-purple-700 text-white text-xs font-bold hover:bg-purple-800"
+                >
+                  Process & Import
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

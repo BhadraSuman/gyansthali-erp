@@ -8,6 +8,7 @@ import { Header } from '@/components/shell/Header';
 import { ChildSwitcher } from '@/components/shell/ChildSwitcher';
 import { BottomNav } from '@/components/shell/BottomNav';
 import { AdminSidebar } from '@/components/shell/AdminSidebar';
+import { PwaRegister } from '@/components/providers/PwaRegister';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -66,6 +67,7 @@ export default function RootLayout({
                 </main>
               </div>
               <BottomNav />
+              <PwaRegister />
             </RoleSessionProvider>
           </LocaleProvider>
         </QueryProvider>

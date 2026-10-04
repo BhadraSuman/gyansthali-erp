@@ -22,6 +22,7 @@ import {
   type DailyAttendanceRecord 
 } from '@/data/attendance';
 import { mockStudents } from '@/data/mockData';
+import { dispatchAbsenceAlert } from '@/data/notifications';
 import type { AttendanceStatus, AttendanceRollCallItem } from '@gyansthali/api-types';
 
 export default function AttendancePage() {
@@ -72,7 +73,15 @@ export default function AttendancePage() {
   };
 
   const handleSaveRollCall = async () => {
-    await submitAttendanceRollCall('s0000000-0000-0000-0000-00000000005a', new Date().toISOString().split('T')[0], rollCallList);
+    const todayStr = new Date().toISOString().split('T')[0];
+    await submitAttendanceRollCall('s0000000-0000-0000-0000-00000000005a', todayStr, rollCallList);
+    
+    // Dispatch absence alerts for any marked absent students
+    const absentItems = rollCallList.filter((item) => item.status === 'absent');
+    for (const item of absentItems) {
+      await dispatchAbsenceAlert(item.studentName, todayStr, item.remarks || 'Fever / Uninformed');
+    }
+
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 4000);
   };

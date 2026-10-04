@@ -13,7 +13,8 @@ import {
   BookOpen, 
   Bus,
   Settings,
-  GraduationCap
+  GraduationCap,
+  Layers
 } from 'lucide-react';
 import { useLocale } from '../providers/LocaleProvider';
 import { useRoleSession } from '../providers/RoleSessionProvider';
@@ -34,6 +35,8 @@ export function AdminSidebar() {
       items: [
         { href: '/', labelEn: 'Executive Dashboard', labelHi: 'डैशबोर्ड', icon: LayoutDashboard },
         { href: '/portal/students', labelEn: 'Students Directory', labelHi: 'छात्र निर्देशिका', icon: Users },
+        { href: '/portal/admin/academics', labelEn: 'Academics & Classes', labelHi: 'शैक्षणिक संरचना', icon: Layers },
+        { href: '/portal/admin/staff', labelEn: 'Staff & Teachers', labelHi: 'शिक्षक व स्टाफ', icon: Users },
         { href: '/portal/attendance', labelEn: 'Attendance & Leaves', labelHi: 'उपस्थिति', icon: CalendarCheck },
       ],
     },

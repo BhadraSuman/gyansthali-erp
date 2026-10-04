@@ -97,7 +97,7 @@ export function Header() {
 
           {/* Notifications Alert */}
           <Link
-            href="/portal/notices"
+            href="/portal/notifications"
             className="relative p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
             title={t('common.notifications')}
           >
