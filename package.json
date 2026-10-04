@@ -1,0 +1,23 @@
+{
+  "name": "gyansthali-school-erp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gyan Sthali Public School ERP - Web First, Flutter-Ready Monorepo",
+  "scripts": {
+    "dev": "pnpm --filter @gyansthali/web dev",
+    "build": "pnpm --filter @gyansthali/design-tokens build && pnpm --filter @gyansthali/web build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "pnpm --filter @gyansthali/web lint",
+    "build:tokens": "pnpm --filter @gyansthali/design-tokens build",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

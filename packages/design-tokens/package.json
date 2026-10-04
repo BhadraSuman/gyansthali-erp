@@ -1,0 +1,14 @@
+{
+  "name": "@gyansthali/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "node scripts/build-tokens.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

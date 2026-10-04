@@ -1,0 +1,12 @@
+{
+  "name": "@gyansthali/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}
